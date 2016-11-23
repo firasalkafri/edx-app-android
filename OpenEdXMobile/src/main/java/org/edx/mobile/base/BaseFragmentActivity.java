@@ -1,12 +1,13 @@
 package org.edx.mobile.base;
 
 import android.content.DialogInterface;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -29,6 +30,7 @@ import org.edx.mobile.event.LogoutEvent;
 import org.edx.mobile.event.NetworkConnectivityChangeEvent;
 import org.edx.mobile.interfaces.NetworkObserver;
 import org.edx.mobile.interfaces.NetworkSubject;
+import org.edx.mobile.interfaces.OnActivityResultListener;
 import org.edx.mobile.logger.Logger;
 import org.edx.mobile.util.NetworkUtil;
 import org.edx.mobile.util.ViewAnimationUtil;
@@ -42,7 +44,7 @@ import java.util.List;
 import de.greenrobot.event.EventBus;
 
 public abstract class BaseFragmentActivity extends BaseAppActivity
-        implements NetworkSubject, ICommonUI {
+        implements NetworkSubject, ICommonUI, OnActivityResultListener {
 
     private MenuItem offlineMenuItem;
     protected ActionBarDrawerToggle mDrawerToggle;
@@ -577,4 +579,9 @@ public abstract class BaseFragmentActivity extends BaseAppActivity
         return false;
     }
 
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 }

@@ -1,8 +1,6 @@
 package org.edx.mobile.view.dialog;
 
-import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,7 +9,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.google.inject.Inject;
@@ -24,50 +24,59 @@ import org.edx.mobile.interfaces.OnActivityResultListener;
 import org.edx.mobile.model.api.ResetPasswordResponse;
 import org.edx.mobile.util.InputValidationUtil;
 import org.edx.mobile.util.NetworkUtil;
+import org.edx.mobile.util.SoftKeyboardUtil;
 import org.edx.mobile.util.images.ErrorUtils;
 
-public class ResetPasswordAlertDialogFragment extends AlertDialogFragment {
+import retrofit2.Call;
+import roboguice.fragment.RoboDialogFragment;
+
+public class ResetPasswordDialogFragment extends RoboDialogFragment {
     @Inject
     private LoginService loginService;
 
-    protected static final String EXTRA_LOGIN_EMAIL = "login_email";
+    private static final String EXTRA_LOGIN_EMAIL = "login_email";
 
+    public static int RESULT_OK = 3333;
+    public static int RESULT_FAILURE = 2222;
+
+    @NonNull
     private TextInputEditText editText;
-    private TextInputLayout textInputLayout;
-    private OnActivityResultListener listener;
 
-    public static ResetPasswordAlertDialogFragment newInstance(@NonNull Context context, @Nullable String email) {
-        ResetPasswordAlertDialogFragment fragment = new ResetPasswordAlertDialogFragment();
+    @NonNull
+    private TextInputLayout textInputLayout;
+
+    @NonNull
+    private View loadingIndicator;
+
+    @Nullable
+    private Call<ResetPasswordResponse> resetCall;
+
+    public static ResetPasswordDialogFragment newInstance(@Nullable String email) {
+        ResetPasswordDialogFragment fragment = new ResetPasswordDialogFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_TITLE, context.getResources().getString(R.string.confirm_dialog_title_help));
-        args.putString(ARG_MESSAGE, context.getResources().getString(R.string.confirm_dialog_message_help));
         args.putString(EXTRA_LOGIN_EMAIL, email);
         fragment.setArguments(args);
-
-        if (context instanceof OnActivityResultListener) {
-            fragment.setListener((OnActivityResultListener) context);
-        } else {
-            throw new ClassCastException("Caller should implement the OnActivityResultListener interface.");
-        }
         return fragment;
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog alertDialog = (AlertDialog) super.onCreateDialog(savedInstanceState);
+        final AlertDialog alertDialog = new AlertDialog.Builder(getContext())
+                .setTitle(R.string.reset_dialog_title)
+                .setMessage(R.string.confirm_dialog_message_help)
+                .setPositiveButton(android.R.string.ok, null)
+                .setNegativeButton(android.R.string.cancel, null)
+                .create();
+        alertDialog.setCanceledOnTouchOutside(false);
 
-        editText = new TextInputEditText(getContext());
-        textInputLayout = new TextInputLayout(getContext());
-        textInputLayout.addView(editText);
-        textInputLayout.setHint(getContext().getString(R.string.email));
-
-        int horizontalPadding = Math.round(getResources().getDimension(R.dimen.abc_dialog_padding_material));
-        int verticalPadding = Math.round(getResources().getDimension(R.dimen.abc_dialog_padding_top_material));
-        textInputLayout.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
-
-        alertDialog.setView(textInputLayout);
+        final ViewGroup layout = (ViewGroup) getActivity().getLayoutInflater()
+                .inflate(R.layout.reset_dialog_email_input, null);
+        textInputLayout = (TextInputLayout) layout.findViewById(R.id.input_layout);
+        editText = (TextInputEditText) layout.findViewById(R.id.edit_text);
+        loadingIndicator = layout.findViewById(R.id.loading_indicator);
         editText.setText(getArguments().getString(EXTRA_LOGIN_EMAIL));
+        alertDialog.setView(layout);
 
         return alertDialog;
     }
@@ -75,7 +84,6 @@ public class ResetPasswordAlertDialogFragment extends AlertDialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-
         /*
          * There are two OnClickListeners associated with an alert dialog button:
          * DialogInterface.OnClickListener and View.OnClickListener.
@@ -92,21 +100,18 @@ public class ResetPasswordAlertDialogFragment extends AlertDialogFragment {
          * We want to prevent the dialog from automatically closing on positive button click,
          * and letting submit() control the logic so, we are overriding View.OnClickListener here.
          */
-        ((AlertDialog) getDialog()).getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                submit(editText.getText().toString().trim());
-            }
-        });
-    }
-
-    public void setListener(@NonNull OnActivityResultListener listener) {
-        this.listener = listener;
+        ((AlertDialog) getDialog()).getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        submit(editText.getText().toString().trim());
+                        SoftKeyboardUtil.hide(textInputLayout);
+                    }
+                });
     }
 
     public void showError(@NonNull String error) {
         textInputLayout.setError(error);
-        textInputLayout.setErrorEnabled(true);
         textInputLayout.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
     }
 
@@ -116,19 +121,25 @@ public class ResetPasswordAlertDialogFragment extends AlertDialogFragment {
         } else if (!InputValidationUtil.isValidEmail(email)) {
             showError(getString(R.string.error_invalid_email));
         } else {
-            loginService.resetPassword(email).enqueue(new ErrorHandlingCallback<ResetPasswordResponse>(
+            setUiForInteraction(false);
+            loadingIndicator.setVisibility(View.VISIBLE);
+            resetCall = loginService.resetPassword(email);
+            resetCall.enqueue(new ErrorHandlingCallback<ResetPasswordResponse>(
                     getContext(), CallTrigger.USER_ACTION) {
                 @Override
                 protected void onResponse(@NonNull final ResetPasswordResponse result) {
+                    setUiForInteraction(true);
+                    final OnActivityResultListener listener =
+                            OnActivityResultListener.Util.getListener(getContext());
                     if (listener != null) {
                         if (result.isSuccess()) {
-                            listener.onActivityResult(0, Activity.RESULT_OK, null);
+                            listener.onActivityResult(0, RESULT_OK, null);
                             dismiss();
                         } else {
                             final String errorMsg = result.getPrimaryReason();
                             final Intent data = new Intent();
                             data.putExtra("error", errorMsg);
-                            listener.onActivityResult(0, Activity.RESULT_CANCELED, data);
+                            listener.onActivityResult(0, RESULT_FAILURE, data);
                             showError(errorMsg);
                         }
                     }
@@ -136,11 +147,14 @@ public class ResetPasswordAlertDialogFragment extends AlertDialogFragment {
 
                 @Override
                 protected void onFailure(@NonNull Throwable error) {
+                    setUiForInteraction(true);
+                    final OnActivityResultListener listener =
+                            OnActivityResultListener.Util.getListener(getContext());
                     if (listener != null) {
                         final String errorMsg = ErrorUtils.getErrorMessage(error, getContext());
                         final Intent data = new Intent();
                         data.putExtra("error", errorMsg);
-                        listener.onActivityResult(0, Activity.RESULT_CANCELED, data);
+                        listener.onActivityResult(0, RESULT_FAILURE, data);
                         showError(errorMsg);
                     }
                 }
@@ -148,43 +162,19 @@ public class ResetPasswordAlertDialogFragment extends AlertDialogFragment {
         }
     }
 
-    @Nullable
     @Override
-    protected ButtonAttributes getNegativeButtonAttributes() {
-        return new ButtonAttributes() {
-            @NonNull
-            @Override
-            public String getMessage() {
-                return getContext().getResources().getString(R.string.label_cancel);
-            }
-
-            @Nullable
-            @Override
-            public DialogInterface.OnClickListener getOnClickListener() {
-                return null;
-            }
-        };
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (resetCall != null) {
+            resetCall.cancel();
+        }
     }
 
-    @NonNull
-    @Override
-    protected ButtonAttributes getPositiveButtonAttributes() {
-        return new ButtonAttributes() {
-            @NonNull
-            @Override
-            public String getMessage() {
-                return getContext().getResources().getString(R.string.label_ok);
-            }
-
-            @Nullable
-            @Override
-            public DialogInterface.OnClickListener getOnClickListener() {
-                /*
-                 * Set null for now. We override the behavior on View.OnClickListener in OnCreate.
-                 * Refer the comment in onCreate() for more details.
-                 */
-                return null;
-            }
-        };
+    private void setUiForInteraction(boolean enabled) {
+        if (getDialog() != null) {
+            editText.setEnabled(enabled);
+            loadingIndicator.setVisibility(enabled ? View.GONE : View.VISIBLE);
+            ((AlertDialog) getDialog()).getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(enabled);
+        }
     }
 }

@@ -20,7 +20,6 @@ import org.edx.mobile.databinding.ActivityLoginBinding;
 import org.edx.mobile.exception.AuthException;
 import org.edx.mobile.exception.LoginErrorMessage;
 import org.edx.mobile.exception.LoginException;
-import org.edx.mobile.interfaces.OnActivityResultListener;
 import org.edx.mobile.model.api.ProfileModel;
 import org.edx.mobile.module.analytics.ISegment;
 import org.edx.mobile.module.prefs.LoginPrefs;
@@ -31,11 +30,12 @@ import org.edx.mobile.util.Config;
 import org.edx.mobile.util.IntentFactory;
 import org.edx.mobile.util.NetworkUtil;
 import org.edx.mobile.util.ResourceUtil;
-import org.edx.mobile.view.dialog.ResetPasswordAlertDialogFragment;
+import org.edx.mobile.view.dialog.ResetPasswordDialogFragment;
 import org.edx.mobile.view.login.LoginPresenter;
 
-public class LoginActivity extends PresenterActivity<LoginPresenter, LoginPresenter.LoginViewInterface>
-        implements SocialLoginDelegate.MobileLoginCallback, OnActivityResultListener {
+public class LoginActivity
+        extends PresenterActivity<LoginPresenter, LoginPresenter.LoginViewInterface>
+        implements SocialLoginDelegate.MobileLoginCallback {
     private SocialLoginDelegate socialLoginDelegate;
     private ActivityLoginBinding activityLoginBinding;
 
@@ -171,8 +171,9 @@ public class LoginActivity extends PresenterActivity<LoginPresenter, LoginPresen
         tryToSetUIInteraction(true);
         socialLoginDelegate.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
-            showAlertDialog(getString(R.string.success_dialog_title_help), getString(R.string.success_dialog_message_help));
+        if (resultCode == ResetPasswordDialogFragment.RESULT_OK) {
+            showAlertDialog(getString(R.string.success_dialog_title_help),
+                    getString(R.string.success_dialog_message_help));
         }
     }
 
@@ -240,17 +241,17 @@ public class LoginActivity extends PresenterActivity<LoginPresenter, LoginPresen
     }
 
     private void showResetPasswordDialog() {
-        ResetPasswordAlertDialogFragment.newInstance(this,
-                getEmail()).show(getSupportFragmentManager(), null);
+        ResetPasswordDialogFragment.newInstance(getEmail()).show(getSupportFragmentManager(), null);
     }
 
     public void showEulaDialog() {
-        environment.getRouter().showWebViewActivity(this, getString(R.string.eula_file_link), getString(R.string.end_user_title));
+        environment.getRouter().showWebViewActivity(this, getString(R.string.eula_file_link),
+                getString(R.string.end_user_title));
     }
 
     // make sure that on the login activity, all errors show up as a dialog as opposed to a flying snackbar
     @Override
-    public void showAlertDialog(String header, String message) {
+    public void showAlertDialog(@Nullable String header,@NonNull String message) {
         super.showAlertDialog(header, message);
     }
 

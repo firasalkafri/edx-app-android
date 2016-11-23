@@ -1,5 +1,6 @@
 package org.edx.mobile.view;
 
+import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -18,15 +19,18 @@ import org.robolectric.shadows.ShadowWebView;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static org.assertj.android.appcompat.v7.api.Assertions.assertThat;
 
 public class WebViewActivityTest extends BaseTestCase {
+
+    // TODO: Convert to Parameterized test once we have a Robolectric parameterized test runner.
 
     /**
      * Testing method for displaying web view dialog
      */
     @Test
-    public void test_StartWebViewActivity_LoadsUrlAndShowsTitle() {
+    public void test_StartWebViewActivity_LoadsUrlAndShowsTitle()
+            throws PackageManager.NameNotFoundException {
         final String url = "https://www.edx.org";
         final String title = "title";
         test_StartWebViewActivity_LoadsUrlAndShowsTitle(url, title);
@@ -40,11 +44,12 @@ public class WebViewActivityTest extends BaseTestCase {
      * @param title The title to show, if any
      */
     protected static void test_StartWebViewActivity_LoadsUrlAndShowsTitle(@NonNull String url,
-                                                                          @Nullable String title) {
+                                                                          @Nullable String title)
+            throws PackageManager.NameNotFoundException {
         final WebViewActivity activity =
                 Robolectric.buildActivity(WebViewActivity.class)
                         .withIntent(WebViewActivity.newIntent(
-                                RuntimeEnvironment.application, url,title)).setup().get();
+                                RuntimeEnvironment.application, url, title)).setup().get();
         final View contentView = Shadows.shadowOf(activity).getContentView();
         assertNotNull(contentView);
         final WebView webView = (WebView) contentView.findViewById(R.id.webView);
@@ -53,11 +58,20 @@ public class WebViewActivityTest extends BaseTestCase {
         assertEquals(shadowWebView.getLastLoadedUrl(), url);
         final ActionBar actionBar = activity.getSupportActionBar();
         assertNotNull(actionBar);
-        assertTrue(actionBar.isShowing());
+        assertThat(actionBar).isShowing();
         if (!TextUtils.isEmpty(title)) {
-            assertTrue(title.equals(actionBar.getTitle()));
+            assertThat(actionBar).hasTitle(title);
         }
-        activity.onBackPressed();
-        assertTrue(activity.isFinishing());
+        /*
+        Robolectric is not providing the correct default title which is why this code has
+        been commented.
+
+        else {
+            final PackageManager pm = activity.getPackageManager();
+            final ActivityInfo aInfo = pm.getActivityInfo(activity.getComponentName(), 0);
+            final String defaultTitle = aInfo.loadLabel(pm).toString();
+            assertThat(actionBar).hasTitle(defaultTitle);
+        }
+        */
     }
 }

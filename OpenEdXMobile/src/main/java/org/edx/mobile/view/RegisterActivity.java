@@ -483,7 +483,7 @@ public class RegisterActivity extends BaseFragmentActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         socialLoginDelegate.onActivityResult(requestCode, resultCode, data);
         tryToSetUIInteraction(true);
