@@ -25,8 +25,8 @@ import org.edx.mobile.event.NetworkConnectivityChangeEvent;
 import org.edx.mobile.logger.Logger;
 import org.edx.mobile.model.api.EnrolledCoursesResponse;
 import org.edx.mobile.model.api.HandoutModel;
-import org.edx.mobile.module.analytics.EventsTracker;
-import org.edx.mobile.module.analytics.IEvents;
+import org.edx.mobile.module.analytics.AnalyticsProvider;
+import org.edx.mobile.module.analytics.Analytics;
 import org.edx.mobile.task.GetHandoutTask;
 import org.edx.mobile.util.NetworkUtil;
 import org.edx.mobile.util.WebViewUtil;
@@ -43,7 +43,7 @@ public class CourseHandoutFragment extends BaseFragment {
     private EnrolledCoursesResponse courseData;
 
     @Inject
-    private EventsTracker eventsTracker;
+    private AnalyticsProvider analyticsProvider;
 
     @Inject
     private IEdxEnvironment environment;
@@ -59,7 +59,7 @@ public class CourseHandoutFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        eventsTracker.trackScreenView(IEvents.Screens.COURSE_HANDOUTS, courseData.getCourse().getId(), null);
+        analyticsProvider.trackScreenView(Analytics.Screens.COURSE_HANDOUTS, courseData.getCourse().getId(), null);
     }
 
     @Override

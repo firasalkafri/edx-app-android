@@ -14,7 +14,7 @@ import org.edx.mobile.http.HttpResponseStatusException;
 import org.edx.mobile.http.HttpStatus;
 import org.edx.mobile.model.api.FormFieldMessageBody;
 import org.edx.mobile.model.api.ProfileModel;
-import org.edx.mobile.module.analytics.EventsTracker;
+import org.edx.mobile.module.analytics.AnalyticsProvider;
 import org.edx.mobile.module.notification.NotificationDelegate;
 import org.edx.mobile.module.prefs.LoginPrefs;
 import org.edx.mobile.util.Config;
@@ -42,7 +42,7 @@ public class LoginAPI {
     private final LoginPrefs loginPrefs;
 
     @NonNull
-    private final EventsTracker eventsTracker;
+    private final AnalyticsProvider analyticsProvider;
 
     @NonNull
     private final NotificationDelegate notificationDelegate;
@@ -57,13 +57,13 @@ public class LoginAPI {
     public LoginAPI(@NonNull LoginService loginService,
                     @NonNull Config config,
                     @NonNull LoginPrefs loginPrefs,
-                    @NonNull EventsTracker eventsTracker,
+                    @NonNull AnalyticsProvider analyticsProvider,
                     @NonNull NotificationDelegate notificationDelegate,
                     @NonNull Gson gson) {
         this.loginService = loginService;
         this.config = config;
         this.loginPrefs = loginPrefs;
-        this.eventsTracker = eventsTracker;
+        this.analyticsProvider = analyticsProvider;
         this.notificationDelegate = notificationDelegate;
         this.gson = gson;
     }
@@ -131,13 +131,13 @@ public class LoginAPI {
             throw e;
         }
         loginPrefs.setLastAuthenticatedEmail(usernameUsedToLogIn);
-        eventsTracker.identifyUser(
+        analyticsProvider.identifyUser(
                 response.profile.id.toString(),
                 response.profile.email,
                 usernameUsedToLogIn);
         final String backendKey = loginPrefs.getAuthBackendKeyForSegment();
         if (backendKey != null) {
-            eventsTracker.trackUserLogin(backendKey);
+            analyticsProvider.trackUserLogin(backendKey);
         }
         notificationDelegate.resubscribeAll();
         logInEvents.sendData(new LogInEvent());

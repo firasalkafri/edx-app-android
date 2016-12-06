@@ -2,7 +2,7 @@ package org.edx.mobile.profiles;
 
 import android.support.annotation.NonNull;
 
-import org.edx.mobile.module.analytics.EventsTracker;
+import org.edx.mobile.module.analytics.AnalyticsProvider;
 import org.edx.mobile.util.observer.Func1;
 import org.edx.mobile.util.observer.Observables;
 import org.edx.mobile.util.observer.Observer;
@@ -18,10 +18,10 @@ public class UserProfilePresenter extends ViewHoldingPresenter<UserProfilePresen
     @NonNull
     private final UserProfileTabsInteractor userProfileTabsInteractor;
 
-    public UserProfilePresenter(@NonNull EventsTracker eventsTracker, @NonNull UserProfileInteractor userProfileInteractor, @NonNull UserProfileTabsInteractor userProfileTabsInteractor) {
+    public UserProfilePresenter(@NonNull AnalyticsProvider analyticsProvider, @NonNull UserProfileInteractor userProfileInteractor, @NonNull UserProfileTabsInteractor userProfileTabsInteractor) {
         this.userProfileInteractor = userProfileInteractor;
         this.userProfileTabsInteractor = userProfileTabsInteractor;
-        eventsTracker.trackProfileViewed(userProfileInteractor.getUsername());
+        analyticsProvider.trackProfileViewed(userProfileInteractor.getUsername());
     }
 
     public UserProfileBioInteractor getBioInteractor() {

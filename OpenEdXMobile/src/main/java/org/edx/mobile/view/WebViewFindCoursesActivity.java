@@ -12,7 +12,7 @@ import android.webkit.WebView;
 import org.edx.mobile.R;
 import org.edx.mobile.base.FindCoursesBaseActivity;
 import org.edx.mobile.logger.Logger;
-import org.edx.mobile.module.analytics.IEvents;
+import org.edx.mobile.module.analytics.Analytics;
 import org.edx.mobile.util.Config;
 
 import java.io.UnsupportedEncodingException;
@@ -34,7 +34,7 @@ public class WebViewFindCoursesActivity extends FindCoursesBaseActivity {
         } else {
             blockDrawerFromOpening();
         }
-        environment.getEventsTracker().trackScreenView(IEvents.Screens.FIND_COURSES);
+        environment.getAnalyticsProvider().trackScreenView(Analytics.Screens.FIND_COURSES);
         webView = (WebView) findViewById(R.id.webview);
         webView.loadUrl(getInitialUrl());
     }

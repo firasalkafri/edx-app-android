@@ -11,7 +11,7 @@ import com.google.inject.Inject;
 import org.edx.mobile.R;
 import org.edx.mobile.base.BaseFragmentActivity;
 import org.edx.mobile.databinding.ActivityLaunchBinding;
-import org.edx.mobile.module.analytics.IEvents;
+import org.edx.mobile.module.analytics.Analytics;
 import org.edx.mobile.module.prefs.LoginPrefs;
 
 public class LaunchActivity extends BaseFragmentActivity {
@@ -32,11 +32,11 @@ public class LaunchActivity extends BaseFragmentActivity {
         binding.signUpBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                environment.getEventsTracker().trackUserSignUpForAccount();
+                environment.getAnalyticsProvider().trackUserSignUpForAccount();
                 startActivity(environment.getRouter().getRegisterIntent());
             }
         });
-        environment.getEventsTracker().trackScreenView(IEvents.Screens.LAUNCH_ACTIVITY);
+        environment.getAnalyticsProvider().trackScreenView(Analytics.Screens.LAUNCH_ACTIVITY);
     }
 
     @Override

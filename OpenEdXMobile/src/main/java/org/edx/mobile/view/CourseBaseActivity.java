@@ -203,7 +203,7 @@ public abstract  class CourseBaseActivity  extends BaseFragmentActivity implemen
                         BrowserUtil.open(CourseBaseActivity.this, getUrlForWebView());
                         CourseComponent courseComponent = courseManager.getComponentById(
                                 courseData.getCourse().getId(), courseComponentId);
-                        environment.getEventsTracker().trackOpenInBrowser(courseComponentId,
+                        environment.getAnalyticsProvider().trackOpenInBrowser(courseComponentId,
                                 courseData.getCourse().getId(), courseComponent.isMultiDevice());
                         return true;
                     }
@@ -246,7 +246,7 @@ public abstract  class CourseBaseActivity  extends BaseFragmentActivity implemen
                                             .actionBarSize(CourseBaseActivity.this)
                                             .colorRes(CourseBaseActivity.this, R.color.edx_white));
                             modeChanged();
-                            environment.getEventsTracker().trackCourseOutlineMode(selectedVideoMode);
+                            environment.getAnalyticsProvider().trackCourseOutlineMode(selectedVideoMode);
                         }
                         return true;
                     }

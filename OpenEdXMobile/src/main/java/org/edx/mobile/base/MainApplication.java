@@ -21,7 +21,8 @@ import org.edx.mobile.R;
 import org.edx.mobile.core.EdxDefaultModule;
 import org.edx.mobile.core.IEdxEnvironment;
 import org.edx.mobile.logger.Logger;
-import org.edx.mobile.module.analytics.ISegmentImpl;
+import org.edx.mobile.module.analytics.AnalyticsProvider;
+import org.edx.mobile.module.analytics.SegmentAnalytics;
 import org.edx.mobile.module.prefs.PrefManager;
 import org.edx.mobile.module.storage.IStorage;
 import org.edx.mobile.receivers.NetworkConnectivityReceiver;
@@ -56,6 +57,9 @@ public abstract class MainApplication extends MultiDexApplication {
     @Inject
     protected Config config;
 
+    @Inject
+    protected AnalyticsProvider analyticsProvider;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -88,7 +92,7 @@ public abstract class MainApplication extends MultiDexApplication {
         }
 
         if (config.getSegmentConfig().isEnabled())  {
-            config.addEventsTracker(injector.getInstance(ISegmentImpl.class));
+            analyticsProvider.addAnalyticsProvider(injector.getInstance(SegmentAnalytics.class));
         }
 
         registerReceiver(new NetworkConnectivityReceiver(), new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));

@@ -3,48 +3,37 @@ package org.edx.mobile.module.analytics;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.edx.mobile.module.analytics.IEvents;
-import org.edx.mobile.util.Config;
 import org.edx.mobile.util.images.ShareUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Simplifies creating tracking logs on multiple services without a lot of code change
- *
- * @author EDRAAK | ahmedjazzar
- * @since 11/16/16
- */
-
 @Singleton
-public class EventsTracker implements IEvents {
+public class AnalyticsProvider implements Analytics<Object, Object> {
+    @NonNull
+    private List<Analytics> services = new ArrayList<>();
 
-    List<IEvents> services;
-
-    @Inject
-    EventsTracker(Config config) {
-        this.services = config.getEventsTrackers();
+    public void addAnalyticsProvider(@NonNull Analytics provider) {
+        services.add(provider);
     }
 
-    public List<Object> trackScreenView(String screenName)    {
+    public List<Object> trackScreenView(String screenName) {
         return trackScreenView(screenName, null, null);
     }
 
     public List<Object> trackScreenView(@NonNull String screenName, @Nullable String courseId,
-                                        @Nullable String action)    {
+                                        @Nullable String action) {
         return trackScreenView(screenName, courseId, action, null);
     }
 
     @Override
     public List<Object> trackScreenView(@NonNull String screenName, @Nullable String courseId,
-                                        @Nullable String action, @Nullable Map<String, String> values)    {
+                                        @Nullable String action, @Nullable Map<String, String> values) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackScreenView(screenName, courseId, action, values));
         }
@@ -54,7 +43,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Object> trackOpenInBrowser(String url) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackOpenInBrowser(url));
         }
@@ -62,9 +51,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackOpenInBrowser(String blockId, String courseId, boolean isSupported)    {
+    public List<Object> trackOpenInBrowser(String blockId, String courseId, boolean isSupported) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackOpenInBrowser(blockId, courseId, isSupported));
         }
@@ -72,9 +61,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackDownloadComplete(String videoId, String courseId, String unitUrl)    {
+    public List<Object> trackDownloadComplete(String videoId, String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackDownloadComplete(videoId, courseId, unitUrl));
         }
@@ -82,9 +71,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackUserFindsCourses()  {
+    public List<Object> trackUserFindsCourses() {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackUserFindsCourses());
         }
@@ -92,9 +81,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackUserConnectionSpeed(String connectionType, float connectionSpeed)   {
+    public List<Object> trackUserConnectionSpeed(String connectionType, float connectionSpeed) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackUserConnectionSpeed(connectionType, connectionSpeed));
         }
@@ -102,9 +91,9 @@ public class EventsTracker implements IEvents {
     }
 
     public List<Object> certificateShared(String courseId, String certificateURL,
-                                          ShareUtils.ShareType method)   {
+                                          ShareUtils.ShareType method) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     certificateShared(courseId, certificateURL, getShareTypeValue(method)));
         }
@@ -112,7 +101,7 @@ public class EventsTracker implements IEvents {
     }
 
     public List<Object> courseDetailShared(String courseId, String shareText,
-                                           ShareUtils.ShareType method)  {
+                                           ShareUtils.ShareType method) {
         return courseDetailShared(courseId, shareText, getShareTypeValue(method));
     }
 
@@ -120,7 +109,7 @@ public class EventsTracker implements IEvents {
     public List<Object> certificateShared(@NonNull String courseId, @NonNull String certificateUrl,
                                           @NonNull String shareType) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.certificateShared(courseId, certificateUrl, shareType));
         }
@@ -131,21 +120,21 @@ public class EventsTracker implements IEvents {
     public List<Object> courseDetailShared(@NonNull String courseId, @NonNull String aboutUrl,
                                            @NonNull String shareType) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.courseDetailShared(courseId, aboutUrl, shareType));
         }
         return returns;
     }
 
-    public List<Object> trackUserLogin(String method)  {
+    public List<Object> trackUserLogin(String method) {
         return trackUserLogin(method, true);
     }
 
     @Override
-    public List<Object> trackUserLogin(String method, boolean didSucceed)  {
+    public List<Object> trackUserLogin(String method, boolean didSucceed) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackUserLogin(method, didSucceed));
         }
@@ -153,9 +142,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackUserRegister(String method, boolean didSucceed)  {
+    public List<Object> trackUserRegister(String method, boolean didSucceed) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackUserRegister(method, didSucceed));
         }
@@ -163,18 +152,18 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackUserLogout()   {
+    public List<Object> trackUserLogout() {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(service.trackUserLogout());
         }
         return returns;
     }
 
     @Override
-    public List<Object> trackEnrollClicked(String courseId, boolean email_opt_in)   {
+    public List<Object> trackEnrollClicked(String courseId, boolean email_opt_in) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackEnrollClicked(courseId, email_opt_in));
         }
@@ -184,7 +173,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Object> trackNotificationReceived(@Nullable String courseId) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(service.trackNotificationReceived(courseId));
         }
         return returns;
@@ -192,9 +181,9 @@ public class EventsTracker implements IEvents {
 
     @Override
     public List<Object> trackVideoPause(String videoId, Double currentTime,
-                                        String courseId, String unitUrl)   {
+                                        String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackVideoPause(videoId, currentTime, courseId, unitUrl));
         }
@@ -204,7 +193,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Object> trackVideoLoading(String videoId, String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackVideoLoading(videoId, courseId, unitUrl));
         }
@@ -213,9 +202,9 @@ public class EventsTracker implements IEvents {
 
     @Override
     public List<Object> trackVideoPlaying(String videoId, Double currentTime,
-                                          String courseId, String unitUrl)  {
+                                          String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackVideoPlaying(videoId, currentTime, courseId, unitUrl));
         }
@@ -223,9 +212,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackVideoStop(String videoId, Double currentTime, String courseId, String unitUrl){
+    public List<Object> trackVideoStop(String videoId, Double currentTime, String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackVideoStop(videoId, currentTime, courseId, unitUrl));
         }
@@ -236,7 +225,7 @@ public class EventsTracker implements IEvents {
     public List<Object> trackVideoOrientation(String videoId, Double currentTime, boolean isLandscape,
                                               String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackVideoOrientation(videoId, currentTime, isLandscape, courseId, unitUrl));
         }
@@ -245,9 +234,9 @@ public class EventsTracker implements IEvents {
 
     @Override
     public List<Object> trackTranscriptLanguage(String videoId, Double currentTime,
-                                                String lang, String courseId, String unitUrl)   {
+                                                String lang, String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackTranscriptLanguage(videoId, currentTime, lang, courseId, unitUrl));
         }
@@ -256,9 +245,9 @@ public class EventsTracker implements IEvents {
 
     @Override
     public List<Object> trackHideTranscript(String videoId, Double currentTime,
-                                            String courseId, String unitUrl)    {
+                                            String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackHideTranscript(videoId, currentTime, courseId, unitUrl));
         }
@@ -267,9 +256,9 @@ public class EventsTracker implements IEvents {
 
     @Override
     public List<Object> trackShowTranscript(String videoId, Double currentTime,
-                                            String courseId, String unitUrl)    {
+                                            String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackShowTranscript(videoId, currentTime, courseId, unitUrl));
         }
@@ -278,9 +267,9 @@ public class EventsTracker implements IEvents {
 
     @Override
     public List<Object> trackVideoSeek(String videoId, Double oldTime, Double newTime,
-                                       String courseId, String unitUrl, Boolean skipSeek)   {
+                                       String courseId, String unitUrl, Boolean skipSeek) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackVideoSeek(videoId, oldTime, newTime, courseId, unitUrl, skipSeek));
         }
@@ -288,9 +277,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackSingleVideoDownload(String videoId, String courseId, String unitUrl)   {
+    public List<Object> trackSingleVideoDownload(String videoId, String courseId, String unitUrl) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackSingleVideoDownload(videoId, courseId, unitUrl));
         }
@@ -300,7 +289,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Object> trackUserSignUpForAccount() {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackUserSignUpForAccount());
         }
@@ -310,7 +299,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Object> trackCourseOutlineMode(boolean isVideoMode) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackCourseOutlineMode(isVideoMode));
         }
@@ -320,7 +309,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Object> trackCourseComponentViewed(String blockId, String courseId) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackCourseComponentViewed(blockId, courseId));
         }
@@ -328,9 +317,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackDiscoverCoursesClicked()   {
+    public List<Object> trackDiscoverCoursesClicked() {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackDiscoverCoursesClicked());
         }
@@ -338,9 +327,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackExploreSubjectsClicked()   {
+    public List<Object> trackExploreSubjectsClicked() {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(service.trackExploreSubjectsClicked());
         }
         return returns;
@@ -349,7 +338,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Object> trackCreateAccountClicked(String appVersion, String source) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackCreateAccountClicked(appVersion, source));
         }
@@ -357,9 +346,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackNotificationTapped(@Nullable String courseId)  {
+    public List<Object> trackNotificationTapped(@Nullable String courseId) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackNotificationTapped(courseId));
         }
@@ -367,9 +356,9 @@ public class EventsTracker implements IEvents {
     }
 
     @Override
-    public List<Object> trackProfileViewed(@NonNull String username)    {
+    public List<Object> trackProfileViewed(@NonNull String username) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackProfileViewed(username));
         }
@@ -380,7 +369,7 @@ public class EventsTracker implements IEvents {
     public List<Object> trackSectionBulkVideoDownload(String enrollmentId, String section,
                                                       long videoCount) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackSectionBulkVideoDownload(enrollmentId, section, videoCount));
         }
@@ -391,7 +380,7 @@ public class EventsTracker implements IEvents {
     public List<Object> trackSubSectionBulkVideoDownload(String section, String subSection,
                                                          String enrollmentId, long videoCount) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackSubSectionBulkVideoDownload(section, subSection, enrollmentId, videoCount));
         }
@@ -401,7 +390,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Object> trackProfilePhotoSet(boolean fromCamera) {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             returns.add(
                     service.trackProfilePhotoSet(fromCamera));
         }
@@ -411,7 +400,7 @@ public class EventsTracker implements IEvents {
     @Override
     public List<Map<String, Object>> identifyUser(String userID, String email, String username) {
         List<Map<String, Object>> userIdentifiers = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             userIdentifiers.add(
                     (Map<String, Object>) service.identifyUser(userID, email, username));
         }
@@ -424,7 +413,7 @@ public class EventsTracker implements IEvents {
     @Override
     public void resetIdentifyUser() {
         List<Object> returns = new ArrayList<>();
-        for (IEvents service: services) {
+        for (Analytics service : services) {
             service.resetIdentifyUser();
         }
     }

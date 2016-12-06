@@ -17,7 +17,6 @@ import com.squareup.phrase.Phrase;
 
 import org.edx.mobile.BuildConfig;
 import org.edx.mobile.logger.Logger;
-import org.edx.mobile.module.analytics.IEvents;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,7 +29,6 @@ public class Config {
 
     private static final Logger logger = new Logger(Config.class.getName());
     private JsonObject mProperties;
-    private List<IEvents> mEventsTrackers;
 
     /* Individual configuration keys */
     private static final String API_HOST_URL = "API_HOST_URL";
@@ -495,18 +493,6 @@ public class Config {
     @NonNull
     public FabricConfig getFabricConfig() {
         return getObjectOrNewInstance(FABRIC, FabricConfig.class);
-    }
-
-    @NonNull
-    public List<IEvents> getEventsTrackers()    {
-        if (mEventsTrackers == null) {
-            mEventsTrackers = new ArrayList<>();
-        }
-        return mEventsTrackers;
-    }
-
-    public void addEventsTracker(IEvents eventsTracker) {
-        mEventsTrackers.add(eventsTracker);
     }
 
     @NonNull

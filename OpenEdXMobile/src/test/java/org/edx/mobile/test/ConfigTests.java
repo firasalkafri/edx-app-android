@@ -4,18 +4,19 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import org.edx.mobile.module.analytics.ISegmentImpl;
 import org.edx.mobile.util.Config;
-
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -377,18 +378,5 @@ public class ConfigTests extends BaseTestCase {
         Config config = new Config(configBase);
         assertTrue(config.getSegmentConfig().isEnabled());
         assertEquals(key, config.getSegmentConfig().getSegmentWriteKey());
-    }
-
-    @Test
-    public void testEventsTrackers()    {
-        Config config = new Config(new JsonObject());
-
-        assertNotNull(config.getEventsTrackers());
-        assertTrue(config.getEventsTrackers().isEmpty());
-
-        config.addEventsTracker(new ISegmentImpl());
-        assertFalse(config.getEventsTrackers().isEmpty());
-        
-        assertTrue(config.getEventsTrackers().get(0) instanceof ISegmentImpl);
     }
 }

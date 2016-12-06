@@ -13,18 +13,17 @@ import com.segment.analytics.Traits;
 
 import org.edx.mobile.base.MainApplication;
 import org.edx.mobile.module.prefs.PrefManager;
-import org.edx.mobile.util.images.ShareUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 
 @Singleton
-public class ISegmentImpl implements IEvents {
+public class SegmentAnalytics implements Analytics<Properties, Traits> {
     @Inject
-    private ISegmentTracker tracker;
+    private SegmentTracker tracker;
 
-    public void setTracker(ISegmentTracker tracker) {
+    public void setTracker(@NonNull SegmentTracker tracker) {
         this.tracker = tracker;
     }
 

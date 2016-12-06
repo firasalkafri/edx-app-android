@@ -26,8 +26,8 @@ import org.edx.mobile.base.BaseFragmentActivity;
 import org.edx.mobile.model.api.FormFieldMessageBody;
 import org.edx.mobile.model.api.ProfileModel;
 import org.edx.mobile.model.api.RegisterResponseFieldError;
-import org.edx.mobile.module.analytics.EventsTracker;
-import org.edx.mobile.module.analytics.IEvents;
+import org.edx.mobile.module.analytics.AnalyticsProvider;
+import org.edx.mobile.module.analytics.Analytics;
 import org.edx.mobile.module.prefs.LoginPrefs;
 import org.edx.mobile.module.registration.model.RegistrationAgreement;
 import org.edx.mobile.module.registration.model.RegistrationDescription;
@@ -65,7 +65,7 @@ public class RegisterActivity extends BaseFragmentActivity
     LoginPrefs loginPrefs;
 
     @Inject
-    EventsTracker eventsTracker;
+    AnalyticsProvider analyticsProvider;
 
     @NonNull
     public static Intent newIntent() {
@@ -79,7 +79,7 @@ public class RegisterActivity extends BaseFragmentActivity
 
         setTitle(R.string.register_title);
 
-        environment.getEventsTracker().trackScreenView(IEvents.Screens.LAUNCH_ACTIVITY);
+        environment.getAnalyticsProvider().trackScreenView(Analytics.Screens.LAUNCH_ACTIVITY);
 
         socialLoginDelegate = new SocialLoginDelegate(this, savedInstanceState, this, environment.getConfig(), loginPrefs);
 
@@ -261,7 +261,7 @@ public class RegisterActivity extends BaseFragmentActivity
             String versionName = BuildConfig.VERSION_NAME;
             String appVersion = String.format("%s v%s", getString(R.string.android), versionName);
 
-            environment.getEventsTracker().trackCreateAccountClicked(appVersion, backstore);
+            environment.getAnalyticsProvider().trackCreateAccountClicked(appVersion, backstore);
         } catch (Exception e) {
             logger.error(e);
         }
@@ -272,13 +272,13 @@ public class RegisterActivity extends BaseFragmentActivity
         final RegisterTask task = new RegisterTask(this, parameters, access_token, backsourceType) {
             @Override
             public void onSuccess(AuthResponse auth) {
-                eventsTracker.trackUserRegister(backsourceType.toString(), true);
+                analyticsProvider.trackUserRegister(backsourceType.toString(), true);
                 onUserLoginSuccess(auth.profile);
             }
 
             @Override
             public void onException(Exception ex) {
-                eventsTracker.trackUserRegister(backsourceType.toString(), false);
+                analyticsProvider.trackUserRegister(backsourceType.toString(), false);
                 hideProgress();
                 if (ex instanceof LoginAPI.RegistrationException) {
                     final FormFieldMessageBody messageBody = ((LoginAPI.RegistrationException) ex).getFormErrorBody();
