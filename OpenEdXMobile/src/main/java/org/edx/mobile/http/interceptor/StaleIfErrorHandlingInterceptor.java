@@ -23,7 +23,7 @@ public class StaleIfErrorHandlingInterceptor implements Interceptor {
      * header.
      */
     private static final Pattern PATTERN_STALE_IF_ERROR = Pattern.compile(
-            "^((.*[,;])?\\s*)stale-if-error(\\s*(=\\s*[^,;\\s].*[^,;\\s])?([,;].*)?)$");
+            "^((.*[,;])?\\s*)stale-if-error(\\s*(=\\s*[^,;\\s]+\\s*)?([,;].*)?)$");
     /**
      * A regular expression replacement for {@link StaleIfErrorHandlingInterceptor#PATTERN_STALE_IF_ERROR}
      * that replaces the 'stale-if-error' directive with 'only-if-cached'.
